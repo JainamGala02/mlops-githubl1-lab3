@@ -1,0 +1,62 @@
+name: Scientific Calculator - Unittest Suite
+run-name: "Unittest Validation Run #${{ github.run_number }}"
+
+on:
+  push:
+    branches:
+      - main
+      - 'hotfix/**'
+    paths:
+      - 'src/**'
+      - 'test/**'
+  pull_request:
+    branches:
+      - main
+
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  unittest-validation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    steps:
+    - name: Pull repository source
+      uses: actions/checkout@v4
+
+    - name: Configure Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install project dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Discover and run unittests
+      run: python -m unittest discover -s test -p "test_sci_unittest.py" -v
+
+    - name: Print success banner
+      if: success()
+      run: |
+        echo "========================================="
+        echo "  All unittest cases PASSED on Python ${{ matrix.python-version }}"
+        echo "========================================="
+
+    - name: Print failure banner
+      if: failure()
+      run: |
+        echo "========================================="
+        echo "  Some unittest cases FAILED on Python ${{ matrix.python-version }}"
+        echo "========================================="

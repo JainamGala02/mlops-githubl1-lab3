@@ -1,0 +1,84 @@
+name: Scientific Calculator - Pytest Suite
+run-name: "Pytest Validation Run #${{ github.run_number }}"
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+    paths:
+      - 'src/**'
+      - 'test/**'
+      - 'requirements.txt'
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+  workflow_dispatch:
+    inputs:
+      verbosity:
+        description: 'Pytest verbosity level'
+        required: false
+        default: '-v'
+        type: choice
+        options:
+          - '-v'
+          - '-vv'
+          - '-q'
+
+jobs:
+  pytest-validation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    steps:
+    - name: Pull repository source
+      uses: actions/checkout@v4
+
+    - name: Configure Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install project dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Execute pytest with XML report
+      run: pytest ${{ github.event.inputs.verbosity || '-v' }} --junitxml=results/pytest-report.xml --tb=short
+      continue-on-error: false
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pytest-results-py${{ matrix.python-version }}
+        path: results/pytest-report.xml
+        retention-days: 14
+
+    - name: Print success banner
+      if: success()
+      run: |
+        echo "========================================="
+        echo "  All pytest cases PASSED on Python ${{ matrix.python-version }}"
+        echo "========================================="
+
+    - name: Print failure banner
+      if: failure()
+      run: |
+        echo "========================================="
+        echo "  Some pytest cases FAILED on Python ${{ matrix.python-version }}"
+        echo "========================================="
