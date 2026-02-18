@@ -1,5 +1,5 @@
 name: Scientific Calculator - Pytest Suite
-run-name: "Pytest Validation Run"
+run-name: "Pytest Validation Run #${{ github.run_number }}"
 
 on:
   push:
@@ -72,9 +72,13 @@ jobs:
     - name: Print success banner
       if: success()
       run: |
-        echo "All pytest cases PASSED"
+        echo "========================================="
+        echo "  All pytest cases PASSED on Python ${{ matrix.python-version }}"
+        echo "========================================="
 
     - name: Print failure banner
       if: failure()
       run: |
-        echo "Some pytest cases FAILED"
+        echo "========================================="
+        echo "  Some pytest cases FAILED on Python ${{ matrix.python-version }}"
+        echo "========================================="
