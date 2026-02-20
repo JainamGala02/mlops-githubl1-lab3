@@ -1,7 +1,7 @@
 # Github Workflow Lab — IE7374 MLOps Lab 3
 
 A Python scientific calculator with automated CI/CD testing via GitHub Actions. The lab uses two testing frameworks (**pytest** and **unittest**) triggered through separate GitHub Actions workflows.
-
+>  **Note:** The original lab implements a basic arithmetic calculator (add, subtract, multiply, divide) with a single GitHub Actions workflow. For my implementation, I've upgraded it to a scientific calculator with functions like `square_root`, `power`, `logarithm`, `sine`, `cosine`, `tangent`, and `factorial` - including proper error handling for edge cases (negative inputs, division by zero, invalid bases). I've also expanded the test suite to cover both **pytest** and **unittest** frameworks with separate workflow files, added a matrix strategy testing across Python 3.9/3.10/3.11, and included triggers for `workflow_dispatch` (manual runs), `schedule` (weekly cron) and path-based filtering.
 ---
 
 ## Lab Structure
